@@ -12,11 +12,9 @@ def main():
     complexities = 0
     for i in input:
         print(i)
-        seq = solve_all(i)
-        print("".join(seq))
-        print(len(seq))
-        complexities += (len(seq) * int(i[:-1]))
-        print()
+        length = solve_all(i)
+        print(length)
+        complexities += (length * int(i[:-1]))
 
     print(complexities)
 
@@ -24,30 +22,29 @@ def main():
 
 
 def solve_all(input):
-    solutions = []
+    shortest_length = 0
     prev_character = 'A'
     for character in input:
         r1_sequences = solve_numeric(character, prev_character)
+        shortest_length += solve_chain(r1_sequences, 1)
         prev_character = character
-        r2_sequences = []
-        for i1 in r1_sequences:
-            r2_sequences.extend(solve_directional(i1))
-        r3_sequences = []
-        for i2 in r2_sequences:
-            r3_sequences.extend(solve_directional(i2))
-        solutions.extend(min(r3_sequences, key=len))
-
-    return solutions
+    return shortest_length
 
 
-def all_shortest(sequences):
-    sequences.sort(key=len)
-    min_len = len(sequences[0])
-    for i in range(1, len(sequences)):
-        if len(sequences[i]) > min_len:
-            return sequences[:i]
-    return sequences
-
+def solve_chain(input_sequences, nb_remaining):
+    result = math.inf
+    for input in input_sequences:
+        shortest_length = 0
+        prev_character = 'A'
+        for character in input:
+            next_sequences = solve_directional(character, prev_character)
+            if nb_remaining > 0:
+                shortest_length += solve_chain(next_sequences, nb_remaining - 1)
+            else:
+                shortest_length += len(min(next_sequences, key=len))
+            prev_character = character
+        result = min(result, shortest_length)
+    return result
 
 
 def solve_numeric(input, start_button):
@@ -66,17 +63,17 @@ def solve_numeric(input, start_button):
     }, (0, 3), start_button)
 
 
-def solve_directional(input):
+def solve_directional(input, start_button):
     return solve(input, {
         '^': (1, 0),
         'A': (2, 0),
         '<': (0, 1),
         'v': (1, 1),
         '>': (2, 1),
-    }, (0, 0))
+    }, (0, 0), start_button)
 
 
-def solve(input, buttons, avoid, start_button='A'):
+def solve(input, buttons, avoid, start_button):
     sequences = [[]]
     current = buttons.get(start_button)
     for character in input:
