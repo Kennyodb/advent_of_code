@@ -26,25 +26,32 @@ def solve_all(input):
     prev_character = 'A'
     for character in input:
         r1_sequences = solve_numeric(character, prev_character)
-        shortest_length += solve_chain(r1_sequences, 1)
+        shortest_length += solve_chain(r1_sequences, 24)
         prev_character = character
     return shortest_length
 
 
+directional_cache = {}
 def solve_chain(input_sequences, nb_remaining):
-    result = math.inf
+    global directional_cache
+    min_length = math.inf
     for input in input_sequences:
-        shortest_length = 0
+        length = 0
         prev_character = 'A'
         for character in input:
-            next_sequences = solve_directional(character, prev_character)
-            if nb_remaining > 0:
-                shortest_length += solve_chain(next_sequences, nb_remaining - 1)
-            else:
-                shortest_length += len(min(next_sequences, key=len))
+            cache_key = (prev_character, character, nb_remaining)
+            sub_length = directional_cache.get(cache_key)
+            if sub_length is None:
+                next_sequences = solve_directional(character, prev_character)
+                if nb_remaining > 0:
+                    sub_length = solve_chain(next_sequences, nb_remaining - 1)
+                else:
+                    sub_length = len(min(next_sequences, key=len))
+                directional_cache[cache_key] = sub_length
+            length += sub_length
             prev_character = character
-        result = min(result, shortest_length)
-    return result
+        min_length = min(min_length, length)
+    return min_length
 
 
 def solve_numeric(input, start_button):
