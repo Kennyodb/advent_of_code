@@ -3,7 +3,7 @@ import re, sys, os, copy, dataclasses, fractions
 
 TEST = False
 def main():
-    with open('test_input' if TEST else 'input', 'r') as f:
+    with open('../test_input' if TEST else '../input', 'r') as f:
         input = f.read().splitlines()
     print('input:')
     print(input)

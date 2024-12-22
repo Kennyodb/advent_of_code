@@ -5,7 +5,7 @@ from collections import deque
 TEST = False
 def main():
     start_time = time.perf_counter()
-    with open('test_input' if TEST else 'input', 'r') as f:
+    with open('../test_input' if TEST else '../input', 'r') as f:
         input = f.read().splitlines()
     print('input:')
     print(input)

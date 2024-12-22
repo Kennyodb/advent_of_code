@@ -4,7 +4,7 @@ TEST = False
 
 
 def main():
-    with open('test_input' if TEST else 'input', 'r') as f:
+    with open('../test_input' if TEST else '../input', 'r') as f:
         input = f.readlines()
     print('input:')
     print(input)
