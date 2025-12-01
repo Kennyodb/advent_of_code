@@ -9,22 +9,7 @@ def main():
     print('input:')
     print(input)
 
-    dial = 50
-    zeroes = 0
-    for line in input:
-        length = int(line[1:])
-        while length > 100:
-            zeroes += 1
-            length -= 100
-        if line[0] == 'L':
-            if 0 < dial <= length:
-                zeroes += 1
-            dial = (dial - length + 100) % 100
-        else:
-            if 0 < dial and dial + length >= 100:
-                zeroes += 1
-            dial = (dial + length) % 100
-    print('zeroes:', zeroes)
+    #TODO
 
     print("Took " + str(time.perf_counter() - start_time) + " seconds")
 
