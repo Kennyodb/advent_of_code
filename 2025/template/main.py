@@ -1,7 +1,7 @@
 import re, sys, os, copy, dataclasses, time, math, itertools
 
 
-TEST = False
+TEST = True
 def main():
     start_time = time.perf_counter()
     with open('../test_input' if TEST else '../input', 'r') as f:
