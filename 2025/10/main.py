@@ -45,25 +45,13 @@ def main():
 
     result = 0
     for machine in range(len(expected_lights)):
-        buttons = [(b,i) for b,i in enumerate(all_buttons[machine])]
-        buttons = sorted(buttons, key=lambda b: len(b), reverse=True)
+        buttons = sorted(all_buttons[machine], key=lambda b: len(b), reverse=True)
         target = tuple(joltage[machine])
-        current = tuple([0 for _ in range(len(target))])
-        min_presses = solve(current, 0, target, buttons)
+        state = tuple([0 for _ in range(len(target))])
+        presses = [-1 for _ in range(len(buttons))]
+        min_presses = solve(state, presses, target, buttons)
         print(min_presses)
         result += min_presses
-
-
-
-    # -- attempt 3
-    applicable_buttons = []
-    for i in range(len(target)):
-        applicable_buttons.append([])
-        for button in buttons:
-            if i in button:
-                applicable_buttons[-1].append(button)
-    solution = [None for _ in range(len(target))]
-    solve2(solution, target, applicable_buttons)
 
     print(result)
 
@@ -71,35 +59,42 @@ def main():
 
 
 
-def solve2(presses, target, applicable_buttons):
-    if not None in presses:
-        return sum(presses)
-    if len(buttons) == 0:
+def solve(state, button_presses, target, buttons):
+    if min(button_presses) >= 0:
+        if state == target:
+            return sum(button_presses)
         return -1
-    max_presses = get_max_presses(buttons[0], current_state, target)
+
+    # early-out, or find target digit with a single applicable button
+    for i in range(len(target)):
+        diff = target[i] - state[i]
+        applicable_buttons = []
+        for button_i in range(len(buttons)):
+            if button_presses[button_i] < 0 and i in buttons[button_i]:
+                applicable_buttons.append(button_i)
+        if len(applicable_buttons) == 0 and diff > 0:
+            return -1
+        if len(applicable_buttons) == 1:
+            button_i = applicable_buttons[0]
+            next_state = press(state, buttons[button_i], diff)
+            if is_too_far(next_state, target):
+                return -1
+            next_presses = copy.deepcopy(button_presses)
+            next_presses[button_i] = diff
+            return solve(next_state, next_presses, target, buttons)
+
+    button_i = find_first(-1, button_presses)
+    max_presses = get_max_presses(buttons[button_i], state, target)
+    next_presses = copy.deepcopy(button_presses)
     for presses in range(max_presses, -1, -1):
-        next_state = press(current_state, buttons[0], presses)
-        next_presses = current_presses + presses
+        next_state = press(state, buttons[button_i], presses)
+        next_presses[button_i] = presses
         if next_state == target:
-            return next_presses
-        solve_rest = solve(next_state, next_presses, target, buttons[1:])
+            return sum(next_presses)
+        solve_rest = solve(next_state, next_presses, target, buttons)
         if solve_rest >= 0:
             return solve_rest
-    return -1
 
-
-def solve(current_state, current_presses, target, buttons):
-    if len(buttons) == 0:
-        return -1
-    max_presses = get_max_presses(buttons[0], current_state, target)
-    for presses in range(max_presses, -1, -1):
-        next_state = press(current_state, buttons[0], presses)
-        next_presses = current_presses + presses
-        if next_state == target:
-            return next_presses
-        solve_rest = solve(next_state, next_presses, target, buttons[1:])
-        if solve_rest >= 0:
-            return solve_rest
     return -1
 
 
@@ -110,9 +105,20 @@ def press(current, button, nb_presses):
     return tuple(next_state)
 
 
+def is_too_far(state, target):
+    return any([state[i] > target[i] for i in range(len(state))])
+
+
 def get_max_presses(button, current, target):
     presses = [target[i] - current[i] for i in button]
     return min(presses)
+
+
+def find_first(element, list):
+    for i, e in enumerate(list):
+        if element == e:
+            return i
+    return -1
 
 
 # Press the green button in the gutter to run the script.
