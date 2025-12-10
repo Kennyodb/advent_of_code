@@ -44,13 +44,24 @@ def main():
     # --- solution 2
 
     result = 0
-    for machine in range(len(expected_lights)):
+    starting_from = 53
+    total = 1
+    print('starting from: ', starting_from)
+    for machine in range(starting_from, starting_from + total + 1):
+        # print(machine)
+        # if machine == 53 or machine == 90 or machine == 76:
+        #     continue
         buttons = sorted(all_buttons[machine], key=lambda b: len(b), reverse=True)
         target = tuple(joltage[machine])
         state = tuple([0 for _ in range(len(target))])
         presses = [-1 for _ in range(len(buttons))]
-        min_presses = solve(state, presses, target, buttons)
-        print(min_presses)
+        solutions = []
+        min_presses = solve(state, presses, target, buttons, solutions, outer=True)
+        minsol = min(solutions)
+        if minsol != solutions[0]:
+            print('!!! ---- ', minsol)
+        else:
+            print(minsol)
         result += min_presses
 
     print(result)
@@ -58,11 +69,11 @@ def main():
     print("Took " + str(time.perf_counter() - start_time) + " seconds")
 
 
-
-def solve(state, button_presses, target, buttons):
+def solve(state, button_presses, target, buttons, solutions, outer=False):
     if min(button_presses) >= 0:
         if state == target:
-            return sum(button_presses)
+            solutions.append(sum(button_presses))
+            print('solution: ', sum(button_presses))
         return -1
 
     # early-out, or find target digit with a single applicable button
@@ -81,19 +92,26 @@ def solve(state, button_presses, target, buttons):
                 return -1
             next_presses = copy.deepcopy(button_presses)
             next_presses[button_i] = diff
-            return solve(next_state, next_presses, target, buttons)
+            return solve(next_state, next_presses, target, buttons, solutions)
 
     button_i = find_first(-1, button_presses)
     max_presses = get_max_presses(buttons[button_i], state, target)
     next_presses = copy.deepcopy(button_presses)
-    for presses in range(max_presses, -1, -1):
-        next_state = press(state, buttons[button_i], presses)
-        next_presses[button_i] = presses
-        if next_state == target:
-            return sum(next_presses)
-        solve_rest = solve(next_state, next_presses, target, buttons)
-        if solve_rest >= 0:
-            return solve_rest
+    if outer:
+        for presses in range(22, max_presses):
+            print(presses)
+            next_state = press(state, buttons[button_i], presses)
+            next_presses[button_i] = presses
+            solve_rest = solve(next_state, next_presses, target, buttons, solutions)
+            if solve_rest >= 0:
+                return solve_rest
+    else:
+        for presses in range(max_presses, -1, -1):
+            next_state = press(state, buttons[button_i], presses)
+            next_presses[button_i] = presses
+            solve_rest = solve(next_state, next_presses, target, buttons, solutions)
+            if solve_rest >= 0:
+                return solve_rest
 
     return -1
 
