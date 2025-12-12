@@ -1,7 +1,7 @@
 import re, sys, os, copy, dataclasses, time, math, itertools, collections
 from os.path import pathsep
 
-TEST = True
+TEST = False
 def main():
     start_time = time.perf_counter()
     with open('../test_input' if TEST else '../input', 'r') as f:
@@ -22,37 +22,29 @@ def main():
         for next_node in node[1]:
             reverse_nodes[next_node].append(node[0])
 
-    result = 0
-    paths = count_paths('svr', 'out', nodes, reverse_nodes)
-    print(paths)
+    svr2fft = count_paths('svr', 'fft', nodes, reverse_nodes)
+    print(svr2fft)
+    fft2dac = count_paths('fft', 'dac', nodes, reverse_nodes)
+    print(fft2dac)
+    dac2out = count_paths('dac', 'out', nodes, reverse_nodes)
+    print(dac2out)
 
-    print(result)
+    print(svr2fft * fft2dac * dac2out)
 
     print("Took " + str(time.perf_counter() - start_time) + " seconds")
 
 
 def count_paths(start, target, nodes, reverse_nodes):
     count = 0
-    paths_to_target = dict([(target,1)])
     queue = collections.deque([target])
-
     reachable_nodes = get_reachable_nodes(start, nodes)
-
     while len(queue) > 0:
-        next_queue = collections.deque()
-        next_paths_to_target = copy.deepcopy(paths_to_target)
-        while len(queue) > 0:
-            node = queue.popleft()
-            paths = paths_to_target[node]
-            for next_node in reverse_nodes[node]:
-                if next_node == start:
-                    count += paths
-                elif next_node in reachable_nodes:
-                    next_paths_to_target.setdefault(next_node, 0)
-                    next_paths_to_target[next_node] += paths
-                    next_queue.append(next_node)
-        queue = next_queue
-        paths_to_target = next_paths_to_target
+        node = queue.popleft()
+        for next_node in reverse_nodes[node]:
+            if next_node == start:
+                count += 1
+            elif next_node in reachable_nodes:
+                queue.append(next_node)
     return count
 
 
